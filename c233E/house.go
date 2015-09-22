@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -12,7 +13,11 @@ import (
 )
 
 func main() {
-
+	w, ln := readFile("inputc2.txt")
+	w = addWindows(buildRoof(buildWalls(buildFloors(w, ln))))
+	for _, v := range w {
+		fmt.Println(string(v))
+	}
 }
 
 func readFile(fn string) (in [][]byte, lmx int) {
