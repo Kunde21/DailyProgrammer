@@ -27,7 +27,7 @@ func main() {
 
 func threes(in int) {
 	for in > 1 {
-		switch r := in % 3; r {
+		switch in % 3 {
 		case 0:
 			fmt.Println(in, 0)
 			in /= 3
