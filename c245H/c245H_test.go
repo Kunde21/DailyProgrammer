@@ -51,7 +51,6 @@ func TestRead(t *testing.T) {
 		t.FailNow()
 	}
 	loadSrc(f)
-
 }
 
 func TestCalc(t *testing.T) {
@@ -86,6 +85,34 @@ func BenchmarkRead(b *testing.B) {
 	}
 }
 
+func Benchmark10k10k(b *testing.B) {
+	f, err := os.Open("ips10k.txt")
+	if err != nil {
+		b.Log(err)
+		b.FailNow()
+	}
+	loadSrc(f)
+	b.StartTimer()
+	fs, err := os.Open("query10k.txt")
+	if err != nil {
+		b.Log(err)
+		b.FailNow()
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		loadStats(fs)
+
+		b.StopTimer()
+		for _, v := range allRngs {
+			v.count = 0
+		}
+		unkC = 0
+		fs.Seek(0, 0)
+		b.StartTimer()
+	}
+}
+
 func Benchmark300k10k(b *testing.B) {
 	f, err := os.Open("ips300k.txt")
 	if err != nil {
@@ -103,8 +130,8 @@ func Benchmark300k10k(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		loadStats(fs)
-		b.StopTimer()
 
+		b.StopTimer()
 		for _, v := range allRngs {
 			v.count = 0
 		}
