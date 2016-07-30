@@ -6,6 +6,9 @@ import (
 	"log"
 	"math/cmplx"
 	"os"
+	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -20,17 +23,43 @@ func main() {
 	var (
 		lim     = 256
 		w, h    = 7680, 4320
-		workers = 6
+		c       = -complex(.763, -.072)
+		fname   = "julia.jpeg"
+		workers = runtime.NumCPU()
 		data    = make([]pixel, w*h)
 		img     = image.NewRGBA(image.Rect(0, 0, w, h))
 	)
+	c, fname = parse(c, fname)
 	build(data, w, h)
-	lim = calc(data, lim, workers)
+	lim = calc(data, lim, workers, c)
 	colorPx(data, img.Pix, lim, workers)
-	err := writeImg(img, "julia.jpeg")
+	err := writeImg(img, fname)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func parse(c complex128, fn string) (complex128, string) {
+	args := os.Args[1:]
+	if len(args) > 0 && strings.HasSuffix(args[0], ".jpeg") && len(args[0]) > 6 {
+		fn = args[0]
+		args = args[1:]
+	}
+	if len(args) < 2 {
+		return c, fn
+	}
+	rel, err1 := strconv.ParseFloat(args[0], 64)
+	img, err2 := strconv.ParseFloat(args[1], 64)
+	if err1 != nil || err2 != nil {
+		log.Println(`Argument error.  
+			Usage:  [filename (must be .jpeg)] [c as <real imaginary>]
+			f = z²+c
+			Example (c only): .001 .002
+			Example (file only): fname.jpeg
+			Example (all):  fname.jpeg .001 .002`)
+		return c, fn
+	}
+	return complex(rel, img), fn
 }
 
 func build(data []pixel, width, height int) {
@@ -46,7 +75,7 @@ func build(data []pixel, width, height int) {
 	}
 }
 
-func calc(data []pixel, lim, wrk int) (max int) {
+func calc(data []pixel, lim, wrk int, c complex128) (max int) {
 	wg := new(sync.WaitGroup)
 	wg.Add(wrk)
 	ch := make(chan int)
@@ -55,7 +84,7 @@ func calc(data []pixel, lim, wrk int) (max int) {
 		go func(w int, ch chan int) {
 			max := 0
 			for i := range data[w : w+ln] {
-				data[w+i].julia(lim)
+				data[w+i].julia(lim, c)
 				if data[w+i].iter > max {
 					max = data[w+i].iter
 				}
@@ -66,7 +95,7 @@ func calc(data []pixel, lim, wrk int) (max int) {
 	go func(ch chan int) {
 		w, max := (wrk-1)*ln, 0
 		for i := range data[w:] {
-			data[w+i].julia(lim)
+			data[w+i].julia(lim, c)
 			if data[w+i].iter > max {
 				max = data[w+i].iter
 			}
@@ -84,9 +113,9 @@ func calc(data []pixel, lim, wrk int) (max int) {
 	return max
 }
 
-func (px *pixel) julia(lim int) {
+func (px *pixel) julia(lim int, c complex128) {
 	for cmplx.Abs(px.val) < 2.0 && px.iter < lim {
-		px.val = px.val*px.val - complex(.221, .713)
+		px.val = px.val*px.val + c
 		px.iter++
 	}
 }
@@ -121,19 +150,19 @@ func convert(iter, lim int) (px RGBA) {
 		px = RGBA{0, 0, 0, 255}
 	case c <= 0.1:
 		tmp = uint8(c / 0.1 * 255)
-		px = RGBA{tmp, 0, 0, 255}
+		px = RGBA{0, 0, tmp, 255}
 	case c <= 0.25:
 		tmp = uint8(c / 0.25 * 255)
-		px = RGBA{255, tmp, 0, 255}
+		px = RGBA{0, tmp, 255, 255}
 	case c <= 0.5:
-		tmp = uint8(1 - c/0.5*255)
-		px = RGBA{tmp, 255, 0, 255}
+		tmp = uint8(c / 0.5 * 255)
+		px = RGBA{0, 255, 255 - tmp, 255}
 	case c <= 0.75:
 		tmp = uint8(c / 0.75 * 255)
-		px = RGBA{0, 255 - tmp, tmp, 255}
+		px = RGBA{tmp, 255 - tmp, 0, 255}
 	default:
 		tmp = uint8(c * 255)
-		px = RGBA{tmp, tmp, 255, 255}
+		px = RGBA{255, tmp, tmp, 255}
 	}
 	return px
 }
