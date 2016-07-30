@@ -24,9 +24,7 @@ func main() {
 
 func loadSrc(f io.Reader) {
 	s := bufio.NewScanner(f)
-	root = NewNode(0, 0, 1<<32-1)
-	allRngs = make([]*Range, 0, 1000)
-	unkC = 0
+	root, allRngs, unkC = NewNode(0, 0, 1<<32-1), make([]*Range, 0, 1000), 0
 	for s.Scan() {
 		tmp := bytes.SplitN(bytes.TrimSpace(s.Bytes()), []byte(" "), 3)
 		min, max := convertIP(tmp[0]), convertIP(tmp[1])
@@ -92,9 +90,9 @@ func NewNode(depth int, min, max uint32) (n *Node) {
 			[]*Node{
 				NewNode(depth+1, min, mid),
 				NewNode(depth+1, mid, max),
-			}, make([]*Range, 0, 20)}
+			}, make([]*Range, 0, 200)}
 	}
-	return &Node{mid, []*Node{}, make([]*Range, 0, 20)}
+	return &Node{mid, []*Node{}, make([]*Range, 0, 200)}
 }
 
 func (n *Node) load(r *Range) {
