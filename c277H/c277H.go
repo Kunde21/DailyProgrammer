@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/jpeg"
 	"log"
-	"math/cmplx"
 	"os"
 	"runtime"
 	"strconv"
@@ -114,7 +113,7 @@ func calc(data []pixel, lim, wrk int, c complex128) (max int) {
 }
 
 func (px *pixel) julia(lim int, c complex128) {
-	for cmplx.Abs(px.val) < 2.0 && px.iter < lim {
+	for real(px.val)*real(px.val)+imag(px.val)*imag(px.val) < 4.0 && px.iter < lim {
 		px.val = px.val*px.val + c
 		px.iter++
 	}

@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+var (
+	lim = 256
+	wrk = 6
+)
+
 /* Quick way to generate multiple fractals
 func TestBuild(t *testing.T) {
 	var (
@@ -39,13 +44,12 @@ func TestBuild(t *testing.T) {
 } //*/
 
 func BenchmarkRun500x400(t *testing.B) {
-	w, h, lim, wrk := 500, 400, 128, 12
+	w, h := 500, 400
 	c := complex(.221, .713)
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	data := make([]pixel, w*h)
 
 	t.ResetTimer()
-	t.ReportAllocs()
 	for i := 0; i < t.N; i++ {
 		build(data, w, h)
 		max := calc(data, lim, wrk, c)
@@ -54,13 +58,12 @@ func BenchmarkRun500x400(t *testing.B) {
 }
 
 func BenchmarkRun1080(t *testing.B) {
-	w, h, lim, wrk := 1920, 1080, 128, 12
+	w, h := 1920, 1080
 	c := complex(.221, .713)
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	data := make([]pixel, w*h)
 
 	t.ResetTimer()
-	t.ReportAllocs()
 	for i := 0; i < t.N; i++ {
 		build(data, w, h)
 		max := calc(data, lim, wrk, c)
@@ -69,7 +72,7 @@ func BenchmarkRun1080(t *testing.B) {
 }
 
 func BenchmarkRun4k(t *testing.B) {
-	w, h, lim, wrk := 4096, 2160, 128, 12
+	w, h := 4096, 2160
 	c := complex(.221, .713)
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	data := make([]pixel, w*h)
@@ -83,7 +86,7 @@ func BenchmarkRun4k(t *testing.B) {
 }
 
 func BenchmarkRun8k(t *testing.B) {
-	w, h, lim, wrk := 7680, 4320, 128, 12
+	w, h := 7680, 4320
 	c := complex(.221, .713)
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	data := make([]pixel, w*h)
