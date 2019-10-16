@@ -1,0 +1,6 @@
+PASS
+BenchmarkRun500x400-12	     300	   3551373 ns/op
+BenchmarkRun1080-12   	      20	  58750705 ns/op
+BenchmarkRun4k-12     	       5	 254828560 ns/op
+BenchmarkRun8k-12     	       2	 974224250 ns/op
+ok  	github.com/Kunde21/DailyProgrammer/c277H	8.618s
